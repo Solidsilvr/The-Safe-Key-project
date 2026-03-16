@@ -2,7 +2,10 @@
 #   The-Safe-Key-project   #
    --A Password Manager--
    
+   
 |-------------------------------------------------------------------|
+
+
 |--------README-------|
 
 
@@ -19,7 +22,10 @@
 
 		python -m pip install cryptography
 
+
 |-------------------------------------------------------------------|
+
+
 Hello, its me again "the developer" of this thing:
 This was intitially another one of my Highschool Projects:
 
@@ -35,7 +41,10 @@ it Encrypts data using Python Cryptography Module {Pyca}
 stores it in a sql database
 
 Checkout the branch for changelogs and stuff !
+
+
 |-------------------------------------------------------------------|
+
 
 Safe_Key_Project 0.2 
     @Solidsilvr
