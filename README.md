@@ -1,6 +1,7 @@
 
 #   The-Safe-Key-project   #
    --A Password Manager--
+   
 |-------------------------------------------------------------------|
 |--------README-------|
 
@@ -35,6 +36,7 @@ stores it in a sql database
 
 Checkout the branch for changelogs and stuff !
 |-------------------------------------------------------------------|
+
 Safe_Key_Project 0.2 
     @Solidsilvr
      | 2026 |
