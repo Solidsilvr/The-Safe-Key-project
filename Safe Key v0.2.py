@@ -1,6 +1,7 @@
 #Initialisation / Pre-Setups
 import sqlite3,hashlib,secrets,base64,pickle,os
 from cryptography.fernet import Fernet
+from prettytable import PrettyTable
 
 #File/Database integrity verification and Database intialisation
 if not os.path.exists("Psuedo.db"):    
@@ -121,22 +122,22 @@ def Login():
             HashP=hashlib.pbkdf2_hmac('sha256',P.encode(),bytes.fromhex(S),10000,32) #Hashing inputed Password
             if secrets.compare_digest(HashP.hex(),Px): #Comapring both passwords 
                 print("  | Succesful Login |\n")
-                key=base64.urlsafe_b64encode(hashlib.pbkdf2_hmac('sha256',HashP,bytes.fromhex(S),10000,32)).hex() #Key Generation
+                key=base64.urlsafe_b64encode(hashlib.pbkdf2_hmac('sha256',P.encode(),bytes.fromhex(S),10000,32)).hex() #Key Generation
                 F=Fernet(bytes.fromhex(key)) #Encryption Object
                 while True:
                     try:
                         Dc.execute("Select * from seneorita order by S_no")
                         rec=Dc.fetchall()
-                        print("|----------------------------------------------------------------------------------|")
                         if rec == []:
-                            print("\t\t\t| No Passwords Stored Yet |")
+                            print("\n","\t\t\t| No Passwords Stored Yet |","\n",sep="")
                             Sn=1
                         else:
-                            print("|S_no |\t\t Domain |\t\t Username |\t\t Password |")
+                            table=PrettyTable()
+                            table.field_names=["S_no","Domain","Username","Password"]
                             for x in rec:
-                                print("",x[0],"\t\t",F.decrypt(bytes.fromhex(x[1])).decode(),"\t\t",F.decrypt(bytes.fromhex(x[2])).decode(),"\t",F.decrypt(bytes.fromhex(x[3])).decode())  #Decrypting / Displaying Records
+                                table.add_row([x[0],F.decrypt(bytes.fromhex(x[1])).decode(),F.decrypt(bytes.fromhex(x[2])).decode(),F.decrypt(bytes.fromhex(x[3])).decode()])  #Decrypting / Displaying Records
                                 Sn=x[0]+1
-                        print("|----------------------------------------------------------------------------------|")
+                            print("\n",table,"\n",sep="")
                         print("\n| Pick a choice |\n1: Add record\n2: Delete record\n3: Change record\n4: Additional Settings\n5: Logout\n6: Quit")
                         ch=int(input("Enter your choice: "))
                         if ch == 1:
