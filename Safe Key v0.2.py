@@ -122,14 +122,15 @@ def Login():
             HashP=hashlib.pbkdf2_hmac('sha256',P.encode(),bytes.fromhex(S),10000,32) #Hashing inputed Password
             if secrets.compare_digest(HashP.hex(),Px): #Comapring both passwords 
                 print("  | Succesful Login |\n")
-                key=base64.urlsafe_b64encode(hashlib.pbkdf2_hmac('sha256',P.encode(),bytes.fromhex(S),10000,32)).hex() #Key Generation
-                F=Fernet(bytes.fromhex(key)) #Encryption Object
+                key=base64.urlsafe_b64encode(hashlib.pbkdf2_hmac('sha256',P.encode(),bytes.fromhex(S),10000,32)) #Key Generation
+                F=Fernet(key) #Encryption Object
                 while True:
                     try:
                         Dc.execute("Select * from seneorita order by S_no")
                         rec=Dc.fetchall()
+                        print("|------------------------------------------------------------------------------|\n")
                         if rec == []:
-                            print("\n","\t\t\t| No Passwords Stored Yet |","\n",sep="")
+                            print("\t\t\t| No Passwords Stored Yet |")
                             Sn=1
                         else:
                             table=PrettyTable()
@@ -137,8 +138,9 @@ def Login():
                             for x in rec:
                                 table.add_row([x[0],F.decrypt(bytes.fromhex(x[1])).decode(),F.decrypt(bytes.fromhex(x[2])).decode(),F.decrypt(bytes.fromhex(x[3])).decode()])  #Decrypting / Displaying Records
                                 Sn=x[0]+1
-                            print("\n",table,"\n",sep="")
-                        print("\n| Pick a choice |\n1: Add record\n2: Delete record\n3: Change record\n4: Additional Settings\n5: Logout\n6: Quit")
+                            print(table)
+                        print("\n|------------------------------------------------------------------------------|")
+                        print("\n| Pick a choice |\n1: Add record\n2: Delete record\n3: Change record\n4: Search record\n5: Additional Settings\n6: Logout\n7: Quit")
                         ch=int(input("Enter your choice: "))
                         if ch == 1:
                             Domain=F.encrypt(input("Enter the Domain of registraion: ").encode()).hex()
@@ -162,6 +164,34 @@ def Login():
                             print("Successfuly changed record\n")
                             Db.commit()
                         elif ch == 4:
+                            print("| Search Record |")
+                            print("1: Search by Domain\n2: Search by Username\n3: Go Back")
+                            s=int(input("Enter your choice: "))
+                            if s == 1:
+                                shx=input("Enter the Domain to search: ")
+                                table2=table.get_string(row_filter=lambda row: row[1]==shx)
+                                print("|------------------------------------------------------------------------------|\n")
+                                if len(table2) == 159:
+                                    print("\t\t\t| No Such Records found |")
+                                else:
+                                    print(table2)
+                                print("\n|------------------------------------------------------------------------------|\n")
+                                input("Continue: ")
+                            elif s == 2:
+                                shx=input("Enter the Username to search: ")
+                                table2=table.get_string(row_filter=lambda row: row[2]==shx)
+                                print("|------------------------------------------------------------------------------|\n")
+                                if len(table2) == 159:
+                                    print("\t\t\t| No Such Records found |")
+                                else:
+                                    print(table2)
+                                print("\n|------------------------------------------------------------------------------|\n")
+                                input("Continue: ")
+                            elif s == 3:
+                                pass
+                            else:
+                                print(" | Invalid Input | \n     Try Again")   
+                        elif ch == 5:
                             print("| Adittional Settings |")
                             print("1: Change Master Password\n2: Delete Account\n3: Go Back")
                             s=int(input("Enter your choice: "))
@@ -187,14 +217,15 @@ def Login():
                                         LN=[]
                                         if rec != []:
                                             for x in rec:
-                                                LX.append((x[0],F.decrypt(bytes.fromhex(x[1])),F.decrypt(bytes.fromhex(x[2])),F.decrypt(bytes.fromhex(x[3]))))  #Decrypting Records
-                                            key=base64.urlsafe_b64encode(hashlib.pbkdf2_hmac('sha256',HashP,S,10000,32)).hex() #Key Generation
-                                            F=Fernet(bytes.fromhex(key)) #Encryption Object
+                                                LX.append([x[0],F.decrypt(bytes.fromhex(x[1])),F.decrypt(bytes.fromhex(x[2])),F.decrypt(bytes.fromhex(x[3]))])  #Decrypting Records
+                                            key=base64.urlsafe_b64encode(hashlib.pbkdf2_hmac('sha256',P.encode(),S,10000,32)) #Key Generation
+                                            F=Fernet(key) #Encryption Object
                                             for x in LX:
-                                                LN.append((x[0],F.encrypt(x[1]).hex(),F.encrypt(x[2]).hex(),F.encrypt(x[3]).hex()))
+                                                LN.append([x[0],F.encrypt(x[1]).hex(),F.encrypt(x[2]).hex(),F.encrypt(x[3]).hex()])
                                             Dc.execute("Delete from Seneorita")
                                             for x in LN:
                                                 Dc.execute("insert into seneorita values(?,?,?,?)",(x[0],x[1],x[2],x[3]))
+                                            Db.commit()
                                         break                                  
                                     else:
                                         print("| Password confirm mismatch | \n\t Try Again")
@@ -212,10 +243,10 @@ def Login():
                             else:
                                 print(" | Invalid Input | \n     Try Again")
                                 
-                        elif ch == 5:
+                        elif ch == 6:
                             print(" | Successfuly Logged out |")
                             break
-                        elif ch == 6:
+                        elif ch == 7:
                             print(" | Quitting |")
                             return True
                         else:
