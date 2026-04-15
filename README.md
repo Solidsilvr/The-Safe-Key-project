@@ -22,6 +22,10 @@
 
 		python -m pip install cryptography
 
+3. prettytable (Latest Stable Build)-
+
+		python -m pip install prettytable
+
 
 -------------------------------------------------------------------
 
@@ -33,6 +37,8 @@ This was intitially another one of my Highschool Projects:
 it uses Python3 (3.14 to be exact) and Pyca module :
 	          {cryptography 46.0.5}
        https://cryptography.io/en/latest
+	           {prettytable 3.17.0}
+	   https://pypi.org/project/prettytable
 
 
 The Safe Key project is a simple Local machine based password manager
