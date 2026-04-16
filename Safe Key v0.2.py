@@ -3,88 +3,24 @@ import sqlite3,hashlib,secrets,base64,pickle,os
 from cryptography.fernet import Fernet
 from prettytable import PrettyTable
 
-#File/Database integrity verification and Database intialisation
-if not os.path.exists("Psuedo.db"):    
-    print("dbFile Does not Exist\nCheck for possible alteration to Psuedo.db")
-    In=input("Create a new Database\n| YES  or Quit |\n\t")
-    if In in ("YES","yes","Yes","Y","y"):
-        if os.path.exists("Hex.dat"):
-            os.remove("Hex.dat")
-        if os.path.exists("Pepper.dat"):
-            os.remove("Pepper.dat")
-        Db=sqlite3.connect("Psuedo.db")
-        Dc=Db.cursor()
-        Dc.execute("Create table Seneor (Password Varchar(256) Primary key)")
-        Dc.execute("Create table seneorita (S_no integer Primary Key Autoincrement,Domain varchar(256) Not Null,Username varchar(256) Not Null,Password varchar(256) Not Null)")
-        Db.commit()
-    elif In in ("QUIT","quit","q","Q"):
-        quit() 
+#Function Defs:
+def dbcnct():
+    global Db,Dc
+    Db=sqlite3.connect("Psuedo.db")
+    Dc=Db.cursor()
+    Dc.execute("Create table Seneor (Password Varchar(256) Primary key)")
+    Dc.execute("Create table seneorita (S_no integer Primary Key Autoincrement,Domain varchar(256) Not Null,Username varchar(256) Not Null,Password varchar(256) Not Null)")
+    Db.commit()
+
+def srhfltrprt():
+    global table2
+    print("|------------------------------------------------------------------------------|\n")
+    if len(table2) == 159:
+        print("\t\t\t| No Such Records found |")
     else:
-        print(" | Invalid Input | \n     Try Again")
-else:
-    print("|DbFile Found|proceedig to digest Hash")
-    f1=open("Psuedo.db","rb")
-    NewHex1=hashlib.file_digest(f1,"sha256").hexdigest()
-    NewHex=NewHex1.encode()
-    f1.close()
-    if not os.path.exists("Hex.dat"):
-        print("HexFile Does not Exist\nCheck for possible alteration to Hex.dat")
-        In=input("Create a new Database\n| YES  or Quit |\n\t")
-        if In in ("YES","yes","Yes","Y","y"):
-            os.remove("Psuedo.db")
-            if os.path.exists("Pepper.dat"):
-                os.remove("Pepper.dat")
-            Db=sqlite3.connect("Psuedo.db")
-            Dc=Db.cursor()
-            Dc.execute("Create table Seneor (Password Varchar(256) Primary key)")
-            Dc.execute("Create table Seneorita (S_no integer Primary Key Autoincrement,Domain varchar(256) Not Null,Username varchar(256) Not Null,Password varchar(256) Not Null)")
-            Db.commit()
-        elif In in ("QUIT","quit","q","Q"):
-            quit() 
-        else:
-            print(" | Invalid Input | \n     Try Again")
-    else:
-        print("|HexFile Found|proceedig to compare Hash")
-        f2=open("Hex.dat","rb")
-        X=pickle.load(f2).encode()
-        f2.close()
-        if secrets.compare_digest(X,NewHex):
-            print("| Hash verification Success |")
-            if not os.path.exists("Pepper.dat"):
-                print("| SaltHashFile Not Found |\n |Recent Account Reset| /possible alteration to Pepper.dat")
-                In=input("Create a new Database\n| YES  or Quit |\n\t")
-                if In in ("YES","yes","Yes","Y","y"):
-                    os.remove("Psuedo.db")
-                    os.remove("Hex.dat")
-                    Db=sqlite3.connect("Psuedo.db")
-                    Dc=Db.cursor()
-                    Dc.execute("Create table Seneor (Password Varchar(256) Primary key)")
-                    Dc.execute("Create table Seneorita (S_no integer Primary Key Autoincrement,Domain varchar(256) Not Null,Username varchar(256) Not Null,Password varchar(256) Not Null)")
-                    Db.commit()
-                elif In in ("QUIT","quit","q","Q"):
-                    quit() 
-                else:
-                    print(" | Invalid Input | \n     Try Again")
-            else:
-                Db=sqlite3.connect("Psuedo.db")
-                Dc=Db.cursor()
-        else:
-            print("| Hash Verification Failed |\nDatabase Compromised")
-            In=input("Create a new Database\n| YES  or Quit |\n\t")
-            if In in ("YES","yes","Yes","Y","y"):
-                os.remove("Psuedo.db")
-                os.remove("Hex.dat")
-                if os.path.exists("Pepper.dat"):
-                    os.remove("Pepper.dat")
-                Db=sqlite3.connect("Psuedo.db")
-                Dc=Db.cursor()
-                Dc.execute("Create table Seneor (Password Varchar(256) Primary key)")
-                Dc.execute("Create table Seneorita (S_no integer Primary Key Autoincrement,Domain varchar(256) Not Null,Username varchar(256) Not Null,Password varchar(256) Not Null)")
-                Db.commit()
-            elif In in ("QUIT","quit","q","Q"):
-                quit() 
-            else:
-                print(" | Invalid Input | \n     Try Again")
+        print(table2)
+    print("\n|------------------------------------------------------------------------------|\n")
+    input("Continue: ")
 
 #Registration
 def Reg():
@@ -167,26 +103,15 @@ def Login():
                             print("| Search Record |")
                             print("1: Search by Domain\n2: Search by Username\n3: Go Back")
                             s=int(input("Enter your choice: "))
+                            global table2
                             if s == 1:
                                 shx=input("Enter the Domain to search: ")
                                 table2=table.get_string(row_filter=lambda row: row[1]==shx)
-                                print("|------------------------------------------------------------------------------|\n")
-                                if len(table2) == 159:
-                                    print("\t\t\t| No Such Records found |")
-                                else:
-                                    print(table2)
-                                print("\n|------------------------------------------------------------------------------|\n")
-                                input("Continue: ")
+                                srhfltrprt()
                             elif s == 2:
                                 shx=input("Enter the Username to search: ")
                                 table2=table.get_string(row_filter=lambda row: row[2]==shx)
-                                print("|------------------------------------------------------------------------------|\n")
-                                if len(table2) == 159:
-                                    print("\t\t\t| No Such Records found |")
-                                else:
-                                    print(table2)
-                                print("\n|------------------------------------------------------------------------------|\n")
-                                input("Continue: ")
+                                srhfltrprt()
                             elif s == 3:
                                 pass
                             else:
@@ -213,8 +138,7 @@ def Login():
                                         print("| Successfuly Altered Password |\n \tLogging Out")
                                         Dc.execute("Select * from seneorita order by S_no")
                                         rec=Dc.fetchall()
-                                        LX=[]
-                                        LN=[]
+                                        LX,LN=[],[]
                                         if rec != []:
                                             for x in rec:
                                                 LX.append([x[0],F.decrypt(bytes.fromhex(x[1])),F.decrypt(bytes.fromhex(x[2])),F.decrypt(bytes.fromhex(x[3]))])  #Decrypting Records
@@ -262,6 +186,73 @@ def Login():
             print("| Password confirm mismatch | \n\t Try Again")
             continue
 
+#File/Database integrity verification and Database intialisation
+if not os.path.exists("Psuedo.db"):    
+    print("dbFile Does not Exist\nCheck for possible alteration to Psuedo.db")
+    In=input("Create a new Database\n| YES  or Quit |\n\t")
+    if In in ("YES","yes","Yes","Y","y"):
+        if os.path.exists("Hex.dat"):
+            os.remove("Hex.dat")
+        if os.path.exists("Pepper.dat"):
+            os.remove("Pepper.dat")
+        dbcnct()
+    elif In in ("QUIT","quit","q","Q"):
+        quit() 
+    else:
+        print(" | Invalid Input | \n     Try Again")
+else:
+    print("|DbFile Found|proceedig to digest Hash")
+    f1=open("Psuedo.db","rb")
+    NewHex1=hashlib.file_digest(f1,"sha256").hexdigest()
+    NewHex=NewHex1.encode()
+    f1.close()
+    if not os.path.exists("Hex.dat"):
+        print("HexFile Does not Exist\nCheck for possible alteration to Hex.dat")
+        In=input("Create a new Database\n| YES  or Quit |\n\t")
+        if In in ("YES","yes","Yes","Y","y"):
+            os.remove("Psuedo.db")
+            if os.path.exists("Pepper.dat"):
+                os.remove("Pepper.dat")
+            dbcnct()
+        elif In in ("QUIT","quit","q","Q"):
+            quit() 
+        else:
+            print(" | Invalid Input | \n     Try Again")
+    else:
+        print("|HexFile Found|proceedig to compare Hash")
+        f2=open("Hex.dat","rb")
+        X=pickle.load(f2).encode()
+        f2.close()
+        if secrets.compare_digest(X,NewHex):
+            print("| Hash verification Success |")
+            if not os.path.exists("Pepper.dat"):
+                print("| SaltHashFile Not Found |\n |Recent Account Reset| /possible alteration to Pepper.dat")
+                In=input("Create a new Database\n| YES  or Quit |\n\t")
+                if In in ("YES","yes","Yes","Y","y"):
+                    os.remove("Psuedo.db")
+                    os.remove("Hex.dat")
+                    dbcnct()
+                elif In in ("QUIT","quit","q","Q"):
+                    quit() 
+                else:
+                    print(" | Invalid Input | \n     Try Again")
+            else:
+                Db=sqlite3.connect("Psuedo.db")
+                Dc=Db.cursor()
+        else:
+            print("| Hash Verification Failed |\nDatabase Compromised")
+            In=input("Create a new Database\n| YES  or Quit |\n\t")
+            if In in ("YES","yes","Yes","Y","y"):
+                os.remove("Psuedo.db")
+                os.remove("Hex.dat")
+                if os.path.exists("Pepper.dat"):
+                    os.remove("Pepper.dat")
+                dbcnct()
+            elif In in ("QUIT","quit","q","Q"):
+                quit() 
+            else:
+                print(" | Invalid Input | \n     Try Again")
+
  # Program Loop
 while True:
     if os.path.exists("Pepper.dat"):
@@ -275,6 +266,7 @@ while True:
             break
         else:
             continue
+
 #Deinitialisation
 Dc.close()    
 Db.close()
